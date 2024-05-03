@@ -1,0 +1,38 @@
+
+name: Lint and test
+
+on:
+  workflow_dispatch: # Виконувати при ручному запуску
+  pull_request: # Виконувати при PR
+
+jobs:
+  test:
+    runs-on: ubuntu-latest # OC на якій запускається job пайплайну
+    steps: 
+        - uses: actions/checkout@v2.3.4 # Завантаження коду для пайплайну
+        - uses: actions/setup-node@v3   # Встановлення NodeJS v16
+          with:
+            node-version: 16 
+        - name: test # Скрипт для встановлення модулів та тестування
+          shell: bash
+          run: |
+            npm i 
+            npm test
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.3.4
+      - uses: actions/setup-node@v3 # Встановлення NodeJS v16
+        with:
+          node-version: 16 
+      - name: lint # Скрипт для запуску лінтера
+        shell: bash
+        run: |
+          npm install
+          lint_output=$(npm run lint)
+          if echo "$lint_output" | grep -q "warning"; then
+            echo "$lint_output"
+            echo "::error::Linting failed with warnings"
+            exit 1
+          fi
+          echo "$lint_output"
