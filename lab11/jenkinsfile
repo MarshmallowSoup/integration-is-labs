@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Local hostname') {
+            steps {
+                sh "hostname"
+            }
+        }
+        
+        stage('Remote hostname') {
+            steps {
+                node ("lab-9"){
+                    sh "hostname"
+                }
+            }
+        }
+            
+        stage('Build') {
+            steps {
+                node ("lab-9"){
+                    // Get some code from a GitHub repository
+                    git 'https://github.com/creativetimofficial/vue-paper-dashboard.git'
+                    // Build the project
+                    sh "npm install && npm run build"
+                    // Arhive artifacts
+                    dir('dist') {
+                        archiveArtifacts artifacts: '**'
+                    }
+                }
+            }
+
+            post {
+                success {
+                    echo "Build succeeded"
+                }
+            }
+        }
+    }
+}
